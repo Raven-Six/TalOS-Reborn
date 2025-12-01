@@ -1,5 +1,5 @@
 /* eslint-disable no-useless-catch */
-import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, CommandInteraction, Events, PartialGroupDMChannel, Channel } from 'discord.js';
+import { ActivityType, Client, GatewayIntentBits, Collection, REST, Routes, Partials, TextChannel, DMChannel, NewsChannel, Snowflake, Webhook, Message, ChatInputCommandInteraction, Events, PartialGroupDMChannel, Channel } from 'discord.js';
 import { base642Buffer } from '../helpers/index.js';
 import { SlashCommand } from '../typings/discordBot.js';
 import { DefaultCommands } from './discordBot/commands.js';
@@ -85,7 +85,7 @@ export class DiscordBotService {
       const command = this.commands.find(cmd => cmd.name === interaction.commandName);
       if (!command) return;
 
-      this.handleCommand(command, interaction).catch(error => {
+      this.handleCommand(command, interaction as ChatInputCommandInteraction).catch(error => {
         console.error(`Error executing command ${command.name}:`, error);
         interaction.reply({ content: 'An error occurred while executing the command.', ephemeral: true }).catch(console.error);
       });
@@ -128,7 +128,7 @@ export class DiscordBotService {
     await this.client.login(this.token);
   }
 
-  async handleCommand(command: SlashCommand, interaction: CommandInteraction) {
+  async handleCommand(command: SlashCommand, interaction: ChatInputCommandInteraction) {
     if (command.requiresAdmin) {
       const isAdministrator = await this.isAdministrator(interaction.user.id);
       if (!isAdministrator) {
@@ -410,12 +410,15 @@ export class DiscordBotService {
     this.client?.user?.setActivity(`${message}`, { type: activityType });
   }
 
-  public sendTyping(message: Message | CommandInteraction) {
+  public sendTyping(message: Message | ChatInputCommandInteraction) {
     if (!this.client) return;
     if (message instanceof Message) {
-      message.channel.sendTyping();
-    } else if (message instanceof CommandInteraction) {
+      // Only call sendTyping if the channel type supports it
       if (message.channel instanceof TextChannel || message.channel instanceof DMChannel || message.channel instanceof NewsChannel) {
+        message.channel.sendTyping();
+      }
+    } else if (message instanceof ChatInputCommandInteraction) {
+      if (message.channel && (message.channel instanceof TextChannel || message.channel instanceof DMChannel || message.channel instanceof NewsChannel)) {
         message.channel.sendTyping();
       }
     }
@@ -511,7 +514,7 @@ export class DiscordBotService {
     }
   }
 
-  public async sendReply(message: Message | CommandInteraction, reply: string) {
+  public async sendReply(message: Message | ChatInputCommandInteraction, reply: string) {
     if (!this.client) return;
     const channel = message.channel;
     if (!channel) return;

@@ -351,5 +351,5 @@ export function isAdmin(user: string) {
 settingsRouter.get('/appSettings/isAdmin/:user', (req, res) => {
   const user = req.params.user;
   const isAdministrator = isAdmin(user);
-  res.send(isAdmin);
+  res.send(isAdministrator); // ✓ FIXED: Send the boolean value, not the function
 });

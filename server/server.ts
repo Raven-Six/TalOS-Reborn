@@ -7,6 +7,8 @@ import multer from 'multer';
 import bodyParser from 'body-parser';
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from 'url';
+import dotenv from 'dotenv';
 import db, { clearUsers } from './routes/database.js';
 import jwt from 'jsonwebtoken';
 import cookieParser from 'cookie-parser';
@@ -26,6 +28,19 @@ import { DiscordManagementRouter, startDiscordRoutes } from './routes/discord.js
 import { roomsRouter } from './routes/rooms.js';
 import { AppSettingsInterface } from './typings/types.js';
 import { datasetsRouter } from './routes/dataset.js';
+
+// Get the directory name in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from .env file in the project root
+const envPath = path.resolve(__dirname, '../.env');
+dotenv.config({ path: envPath });
+
+// Debug: Log loaded environment variables
+console.log('Environment variables loaded:');
+console.log('PORT:', process.env.PORT);
+console.log('HOST:', process.env.HOST);
 
 const defaultAppSettings: AppSettingsInterface = {
   defaultConnection: "",
@@ -49,7 +64,6 @@ args.forEach(arg => {
   }
 });
 
-const __dirname = path.resolve();
 //get the userData directory
 const appDataDir = process.env.APPDATA ||
   (process.platform === 'darwin' ? process.env.HOME + '/Library/Preferences' :
@@ -84,7 +98,7 @@ export const datasetsPath = `${dataPath}/datasets`;
 export const roomsPath = `${dataPath}/rooms`;
 export const diffusionConnectionsPath = `${dataPath}/diffusion_connections`;
 export const discordConfigPath = path.join(talosDir, "/discordConfigs");
-export const defaultBackgroundsPath = path.join(__dirname, "/defaults/backgrounds");
+export const defaultBackgroundsPath = path.join(path.resolve(), "/defaults/backgrounds");
 // create the directories if they don't exist
 fs.mkdirSync(uploadsPath, { recursive: true });
 fs.mkdirSync(profilePicturesPath, { recursive: true });
@@ -111,8 +125,9 @@ fs.mkdirSync(wasmPath, { recursive: true });
 fs.mkdirSync(imagesPath, { recursive: true });
 fs.mkdirSync(datasetsPath, { recursive: true });
 
-// create the express apps
-const port = 3003;
+// Server configuration from environment variables
+const port = parseInt(process.env.PORT || '3003', 10);
+const host = process.env.HOST || '0.0.0.0';
 
 let appSettings = { ...defaultAppSettings };
 
@@ -211,7 +226,7 @@ async function main() {
     expressApp.use('/pfp', express.static(profilePicturesPath));
     expressApp.use('/backgrounds', express.static(backgroundsPath), express.static(defaultBackgroundsPath));
     expressApp.use('/sprites', express.static(spritesPath));
-    expressApp.use(express.static(path.join(__dirname, '../dist-react')));
+    expressApp.use(express.static(path.join(path.resolve(), '../dist-react')));
     const server = createServer(expressApp);
 
     let userConnections: UserConnection[] = []
@@ -298,10 +313,16 @@ async function main() {
       return connectedUsers;
     }
 
-    server.listen(port, () => {
-      console.log(`Server started on http://localhost:${port}`);
+    // Start server with host and port from environment variables
+    server.listen(port, host, () => {
+      console.log(`Server started on http://${host}:${port}`);
+      if (host === '0.0.0.0') {
+        console.log(`Also accessible via http://localhost:${port}`);
+      }
       if (!useVarFolder) {
-        console.log(`Frontend runs by default on http://localhost:5173`);
+        const vitePort = process.env.VITE_PORT || '5173';
+        const viteHost = process.env.VITE_HOST || 'localhost';
+        console.log(`Frontend runs by default on http://${viteHost}:${vitePort}`);
       }
     });
 
@@ -466,7 +487,7 @@ async function main() {
     expressApp.use('/api', datasetsRouter);
     startDiscordRoutes();
 
-    expressApp.use('*', (req, res) => res.sendFile(path.join(__dirname, '../dist-react', 'index.html')));
+    expressApp.use('*', (req, res) => res.sendFile(path.join(path.resolve(), '../dist-react', 'index.html')));
   } catch (error) {
     console.error(error);
   }

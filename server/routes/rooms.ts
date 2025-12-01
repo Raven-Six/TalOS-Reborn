@@ -11,15 +11,42 @@ function fetchAllRooms() {
   try {
     const newPath = path.join(roomsPath);
     const files = fs.readdirSync(newPath);
-    const data = files.map((file) => {
-      if (!file.endsWith(".json")) return;
-      const filePath = path.join(newPath, file);
-      const fileData = fs.readFileSync(filePath, "utf-8");
-      return JSON.parse(fileData);
-    });
+    const data = files
+      .filter((file) => file.endsWith(".json"))
+      .map((file) => {
+        try {
+          const filePath = path.join(newPath, file);
+          const fileData = fs.readFileSync(filePath, "utf-8");
+          
+          // Skip empty files
+          if (!fileData || fileData.trim() === "") {
+            console.warn(`Skipping empty file: ${file}`);
+            return null;
+          }
+          
+          // Parse JSON with error handling
+          const parsed = JSON.parse(fileData);
+          return parsed;
+        } catch (fileErr) {
+          console.error(`Error processing ${file}:`, fileErr instanceof Error ? fileErr.message : fileErr);
+          // Optionally move corrupt files to a backup location
+          try {
+            const filePath = path.join(newPath, file);
+            const backupPath = path.join(newPath, `${file}.corrupt`);
+            if (!fs.existsSync(backupPath)) {
+              fs.copyFileSync(filePath, backupPath);
+              console.log(`Backed up corrupt file to: ${backupPath}`);
+            }
+          } catch (backupErr) {
+            console.error(`Failed to backup corrupt file ${file}:`, backupErr);
+          }
+          return null;
+        }
+      })
+      .filter((room) => room !== null); // Remove null entries
     return data;
   } catch (err) {
-    console.error(err);
+    console.error('Error fetching all rooms:', err);
     throw err;
   }
 }

@@ -1,4 +1,4 @@
-import { CommandInteraction, Message, Role } from "discord.js";
+import { ChatInputCommandInteraction, Message, Role } from "discord.js";
 import { UsageArguments } from "./types.js";
 
 export type Alias = {
@@ -36,7 +36,7 @@ export interface SlashCommand {
   description: string;
   requiresAdmin?: boolean;
   options?: SlashCommandOption[];
-  execute: (interaction: CommandInteraction) => void | Promise<void>;
+  execute: (interaction: ChatInputCommandInteraction) => void | Promise<void>;
 }
 
 export type ValidStatus = 'online' | 'dnd' | 'idle' | 'invisible';

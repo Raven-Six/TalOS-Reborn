@@ -206,8 +206,17 @@ export class RoomPipeline implements Room {
     if (!fs.existsSync(path.join(roomsPath, `${roomId}.json`))) {
       throw new Error(`Room not found: ${roomId}`);
     }
-    const room = JSON.parse(fs.readFileSync(path.join(roomsPath, `${roomId}.json`), 'utf8')) as Room;
-    return new RoomPipeline(room);
+    try {
+      const fileData = fs.readFileSync(path.join(roomsPath, `${roomId}.json`), 'utf8');
+      if (!fileData || fileData.trim() === "") {
+        throw new Error(`Room file is empty: ${roomId}`);
+      }
+      const room = JSON.parse(fileData) as Room;
+      return new RoomPipeline(room);
+    } catch (error) {
+      console.error(`Error loading room ${roomId}:`, error);
+      throw error;
+    }
   }
 
   public static deleteRoom(roomId: string): void {
@@ -227,31 +236,75 @@ export class RoomPipeline implements Room {
   }
 
   public static doesRoomExistByChannelId(channelId: string): boolean {
-    const roomFiles = fs.readdirSync(roomsPath);
-    const rooms = [];
-    for (const fileName of roomFiles) {
-      const room = JSON.parse(fs.readFileSync(path.join(roomsPath, fileName), 'utf8')) as Room;
-      rooms.push(room);
-    }
-    const room = rooms.find(room => room.channelId === channelId);
-    if (room) {
-      return true;
-    } else {
+    try {
+      const roomFiles = fs.readdirSync(roomsPath);
+      const rooms = [];
+      for (const fileName of roomFiles) {
+        // Skip non-JSON files
+        if (!fileName.endsWith('.json')) {
+          continue;
+        }
+        
+        try {
+          const filePath = path.join(roomsPath, fileName);
+          const fileData = fs.readFileSync(filePath, 'utf8');
+          
+          // Skip empty files
+          if (!fileData || fileData.trim() === "") {
+            console.warn(`Skipping empty room file: ${fileName}`);
+            continue;
+          }
+          
+          const room = JSON.parse(fileData) as Room;
+          rooms.push(room);
+        } catch (parseError) {
+          console.error(`Error parsing room file ${fileName}:`, parseError);
+          continue; // Skip this file and continue with others
+        }
+      }
+      const room = rooms.find(room => room.channelId === channelId);
+      return !!room;
+    } catch (error) {
+      console.error('Error checking if room exists by channel ID:', error);
       return false;
     }
   }
 
   public static getRoomByChannelId(channelId: string): RoomPipeline | undefined {
-    const roomFiles = fs.readdirSync(roomsPath);
-    const rooms = [];
-    for (const fileName of roomFiles) {
-      const room = JSON.parse(fs.readFileSync(path.join(roomsPath, fileName), 'utf8')) as Room;
-      rooms.push({ ...defaultRoom, ...room });
-    }
-    const room = rooms.find(room => room.channelId === channelId);
-    if (room) {
-      return new RoomPipeline(room);
-    } else {
+    try {
+      const roomFiles = fs.readdirSync(roomsPath);
+      const rooms = [];
+      for (const fileName of roomFiles) {
+        // Skip non-JSON files
+        if (!fileName.endsWith('.json')) {
+          continue;
+        }
+        
+        try {
+          const filePath = path.join(roomsPath, fileName);
+          const fileData = fs.readFileSync(filePath, 'utf8');
+          
+          // Skip empty files
+          if (!fileData || fileData.trim() === "") {
+            console.warn(`Skipping empty room file: ${fileName}`);
+            continue;
+          }
+          
+          const room = JSON.parse(fileData) as Room;
+          rooms.push({ ...defaultRoom, ...room });
+        } catch (parseError) {
+          console.error(`Error parsing room file ${fileName}:`, parseError);
+          continue; // Skip this file and continue with others
+        }
+      }
+      const room = rooms.find(room => room.channelId === channelId);
+      if (room) {
+        return new RoomPipeline(room);
+      } else {
+        return undefined;
+      }
+    } catch (error) {
+      console.error('Error getting room by channel ID:', error);
       return undefined;
     }
   }
