@@ -33,7 +33,7 @@ export class RoomPipeline implements Room {
   public allowMultiline: boolean = true;
   public overrides: CharacterSettingsOverride[] = [];
   public users: string[] = [];
-
+  
   constructor(room: Room) {
     this._id = room._id;
     this.name = room.name;

@@ -1,4 +1,4 @@
-import { AttachmentBuilder, CommandInteraction, EmbedBuilder, Message } from "discord.js";
+import { AttachmentBuilder, CommandInteraction, ChatInputCommandInteraction, EmbedBuilder, Message } from "discord.js";
 import { Alias, Room, SlashCommand } from "../../typings/discordBot.js";
 import { RoomPipeline } from "./roomPipeline.js";
 import { addOrChangeAliasForUser, addSystemMessageAndGenerateResponse, clearRoomMessages, clearWebhooks, continueGenerateResponse, deleteRoom, sendCharacterGreeting, setMultiline } from "../../routes/discord.js";
@@ -38,7 +38,7 @@ export const DefaultCommands: SlashCommand[] = [
   {
     name: 'clear',
     description: 'Clears the chat log for the current channel.',
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply();
       if (interaction.channelId === null) {
         await interaction.editReply({
@@ -69,7 +69,7 @@ export const DefaultCommands: SlashCommand[] = [
   {
     name: 'swapchar',
     description: 'Opens character management menu.',
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       try {
         if (interaction.channelId === null) {
           await interaction.reply({
@@ -187,7 +187,7 @@ export const DefaultCommands: SlashCommand[] = [
   {
     name: 'registerroom',
     description: 'Registers a room to the current channel.',
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       if (interaction.channelId === null) {
         await interaction.reply({
           content: "This command can only be used in a server channel.",
@@ -358,7 +358,7 @@ export const DefaultCommands: SlashCommand[] = [
         required: false,
       }
     ],
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       const novelAIConnection = await findNovelAIConnection();
       if (!novelAIConnection) {
         await interaction.reply({
@@ -496,7 +496,7 @@ export const DefaultCommands: SlashCommand[] = [
         required: false,
       },
     ],
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply({ ephemeral: false });
       if (interaction.channelId === null) {
         await interaction.editReply({
@@ -548,7 +548,7 @@ export const DefaultCommands: SlashCommand[] = [
         required: false,
       }
     ],
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       const hidden = interaction.options.get('hidden')?.value as boolean || true;
       await interaction.deferReply({ ephemeral: hidden });
       if (interaction.channelId === null) {
@@ -580,7 +580,7 @@ export const DefaultCommands: SlashCommand[] = [
   {
     name: 'greeting',
     description: 'Sends a greeting from a character to the current channel.',
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply({ ephemeral: true });
       if (interaction.channelId === null) {
         await interaction.editReply({
@@ -611,7 +611,7 @@ export const DefaultCommands: SlashCommand[] = [
   {
     name: 'clearwebhooks',
     description: 'Clears all webhooks for the current channel.',
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       if (interaction.channelId === null) {
         await interaction.reply({
           content: "This command can only be used in a server channel.",
@@ -634,7 +634,7 @@ export const DefaultCommands: SlashCommand[] = [
   {
     name: 'cont',
     description: 'Sends a system message to the current channel.',
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply({ ephemeral: true });
       if (interaction.channelId === null) {
         await interaction.editReply({
@@ -732,7 +732,7 @@ export const DefaultCommands: SlashCommand[] = [
         required: false,
       }
     ],
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       const novelAIConnection = await findSDXLConnection();
       if (!novelAIConnection) {
         await interaction.reply({
@@ -856,7 +856,7 @@ export const DefaultCommands: SlashCommand[] = [
         required: true,
       }
     ],
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply({ ephemeral: true });
       if (interaction.channelId === null) {
         await interaction.editReply({
@@ -886,7 +886,7 @@ export const DefaultCommands: SlashCommand[] = [
   {
     name: 'delroom',
     description: 'Deletes the current room.',
-    execute: async (interaction: CommandInteraction) => {
+    execute: async (interaction: ChatInputCommandInteraction) => {
       await interaction.deferReply({ ephemeral: true });
       if (interaction.channelId === null) {
         await interaction.editReply({

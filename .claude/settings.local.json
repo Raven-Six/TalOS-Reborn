@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run build:*)",
+      "Bash(npm run build-server:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npm run dev)",
+      "Bash(VITE_API_URL=http://localhost:3004/api npm run dev-react:*)",
+      "Bash(node test-mcp.js)",
+      "Bash(node:*)",
+      "Bash(VITE_API_URL=http://localhost:3003/api npm run dev-react:*)",
+      "Bash(git checkout:*)",
+      "Bash(npm run start)",
+      "Bash(curl:*)",
+      "Bash(npm run start-server:*)",
+      "Bash(taskkill:*)",
+      "Bash(npm run dev-react:*)",
+      "Bash(rm:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

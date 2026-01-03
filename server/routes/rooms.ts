@@ -124,3 +124,4 @@ roomsRouter.delete('/:id', (req, res) => {
     res.status(404).send({ message: "Room not found" });
   }
 });
+

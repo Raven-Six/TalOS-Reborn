@@ -143,7 +143,11 @@ settingsRouter.get('/appSettings/connection', (req, res) => {
 settingsRouter.get('/appSettings/settings', (req, res) => {
   const appSettingsData = fetchAllAppSettings();
   if (appSettingsData) {
+    if (appSettingsData.defaultSettings !== undefined) {
     res.send(appSettingsData.defaultSettings);
+  } else {
+    res.status(404).send({ message: "defaultSettings not found" });
+  }
   } else {
     res.status(404).send({ message: "AppSetting not found" });
   }
@@ -317,7 +321,11 @@ settingsRouter.post('/appSettings/enableYesNoMaybe', (req, res) => {
 settingsRouter.get('/appSettings/defaultDiffusionConnection', (req, res) => {
   const appSettingsData = fetchAllAppSettings();
   if (appSettingsData) {
+    if (appSettingsData.defaultDiffusionConnection !== undefined) {
     res.send(appSettingsData.defaultDiffusionConnection);
+  } else {
+    res.status(404).send({ message: "defaultDiffusionConnection not found" });
+  }
   } else {
     res.status(404).send({ message: "AppSetting not found" });
   }
